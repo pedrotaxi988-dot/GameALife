@@ -3,640 +3,513 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LifeQuest - Trilha de Hábitos</title>
+  <title>LifeQuest - Notion x Duolingo OS</title>
   <style>
+    :root {
+      --bg-space: #0b0f19;
+      --bg-card: #151c2c;
+      --bg-hover: #1e293b;
+      --accent-blue: #38bdf8;
+      --accent-green: #10b981;
+      --accent-fire: #f97316;
+      --accent-purple: #a855f7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #1e293b;
+      --radius: 16px;
+    }
+
     * {
       box-sizing: border-box;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
     body {
-      background-color: #030712;
-      color: #f8fafc;
+      background-color: var(--bg-space);
+      color: var(--text-main);
       display: flex;
       justify-content: center;
-      padding: 16px;
-      margin: 0;
       min-height: 100vh;
-      overflow-x: hidden;
+      padding: 16px;
     }
 
     .app-container {
       width: 100%;
-      max-width: 420px;
-      background-color: #0f172a;
+      max-width: 440px;
+      background-color: var(--bg-card);
       border-radius: 28px;
       padding: 20px;
-      border: 1px solid #1e293b;
-      box-shadow: 0 20px 30px -10px rgba(2, 6, 23, 0.8);
-      height: fit-content;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
       position: relative;
     }
 
-    /* Topo: Menu Hambúrguer, Nível e Streak */
-    .top-bar {
+    /* Topo Estilo Duolingo (Status Bar) */
+    .status-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background-color: #1e293b;
-      padding: 8px 16px;
+      background: var(--bg-hover);
+      padding: 10px 16px;
       border-radius: 50px;
-      margin-bottom: 20px;
-      border: 1px solid #334155;
+      border: 1px solid var(--border-color);
     }
 
-    .menu-btn {
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .streak { color: var(--accent-fire); }
+    .xp { color: var(--accent-blue); }
+    .hearts { color: #ef4444; }
+
+    /* Banner de Alerta de Perda de Sequência */
+    .alert-banner {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      padding: 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      text-align: center;
+      display: none;
+    }
+
+    /* Navegação Estilo Notion */
+    .notion-nav {
+      display: flex;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 4px;
+      border-radius: 12px;
+    }
+
+    .nav-btn {
+      flex: 1;
       background: none;
       border: none;
-      color: #f8fafc;
-      font-size: 1.4rem;
-      cursor: pointer;
-      padding: 4px 8px;
-    }
-
-    .streak-badge {
-      color: #f97316;
-      font-weight: 800;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .level-badge {
-      background-color: #2563eb;
-      color: #fff;
-      font-weight: 800;
-      padding: 6px 14px;
-      border-radius: 50px;
-      font-size: 0.85rem;
-    }
-
-    /* Menu Lateral (Drawer) */
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: -280px;
-      width: 260px;
-      height: 100%;
-      background-color: #0f172a;
-      border-right: 1px solid #1e293b;
-      z-index: 200;
-      transition: left 0.3s ease;
-      padding: 24px 16px;
-      box-shadow: 10px 0 25px rgba(0,0,0,0.5);
-    }
-
-    .sidebar.open {
-      left: 0;
-    }
-
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0,0,0,0.6);
-      z-index: 150;
-    }
-
-    .sidebar-overlay.active {
-      display: block;
-    }
-
-    .sidebar-title {
-      font-size: 1.2rem;
-      font-weight: 800;
-      color: #38bdf8;
-      margin-bottom: 20px;
-    }
-
-    .menu-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      color: #94a3b8;
-      text-decoration: none;
-      font-weight: 600;
-      border-radius: 12px;
-      margin-bottom: 6px;
-      transition: background-color 0.2s, color 0.2s;
-      cursor: pointer;
-    }
-
-    .menu-item:hover, .menu-item.active-menu {
-      background-color: #1e293b;
-      color: #38bdf8;
-    }
-
-    /* Sistema de Telas do App */
-    .view-section {
-      display: none;
-    }
-
-    .view-section.active-view {
-      display: block;
-    }
-
-    /* Progresso Diário */
-    .daily-progress {
-      background: linear-gradient(135deg, #1e3a8a, #2563eb);
-      border-radius: 22px;
-      padding: 16px;
-      margin-bottom: 24px;
-    }
-
-    .progress-title {
-      font-size: 0.85rem;
-      color: #93c5fd;
-      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 8px;
+      font-size: 0.8rem;
       font-weight: 700;
-      margin-bottom: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
 
-    .xp-bar-bg {
-      background-color: rgba(3, 7, 18, 0.5);
-      height: 14px;
-      border-radius: 50px;
-      overflow: hidden;
+    .nav-btn.active {
+      background: var(--bg-hover);
+      color: var(--accent-blue);
     }
 
-    .xp-bar-fill {
-      background: linear-gradient(90deg, #38bdf8, #60a5fa);
-      height: 100%;
-      width: 0%;
-      border-radius: 50px;
-      transition: width 0.4s ease;
-    }
+    /* Seções de Telas */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
-    /* Trilha Estilo Duolingo */
-    .path-container {
+    /* TRILHA (ESTILO DUOLINGO) */
+    .path-tree {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 20px;
-      padding: 10px 0 20px 0;
+      gap: 24px;
+      padding: 20px 0;
     }
 
-    .path-node {
+    .tree-node {
       display: flex;
       flex-direction: column;
       align-items: center;
       position: relative;
     }
 
-    .path-node:nth-child(1) { transform: translateX(0px); }
-    .path-node:nth-child(2) { transform: translateX(-40px); }
-    .path-node:nth-child(3) { transform: translateX(40px); }
-    .path-node:nth-child(4) { transform: translateX(-30px); }
-    .path-node:nth-child(5) { transform: translateX(30px); }
-    .path-node:nth-child(6) { transform: translateX(0px); }
+    .tree-node:nth-child(1) { transform: translateX(0); }
+    .tree-node:nth-child(2) { transform: translateX(-35px); }
+    .tree-node:nth-child(3) { transform: translateX(35px); }
+    .tree-node:nth-child(4) { transform: translateX(-25px); }
+    .tree-node:nth-child(5) { transform: translateX(25px); }
 
-    .node-btn {
-      width: 65px;
-      height: 65px;
+    .node-circle {
+      width: 68px;
+      height: 68px;
       border-radius: 50%;
-      border: none;
-      background-color: #1e293b;
-      color: #64748b;
-      font-size: 1.3rem;
+      border: 4px solid var(--border-color);
+      background: var(--bg-hover);
+      color: var(--text-muted);
+      font-size: 1.5rem;
       font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 5px 0 #0f172a;
-      transition: transform 0.1s;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
+      cursor: not-allowed;
+      box-shadow: 0 6px 0 var(--border-color);
+      transition: all 0.2s ease;
     }
 
-    .node-btn.easy { border: 3px solid #3b82f6; color: #60a5fa; }
-    .node-btn.hard { border: 3px solid #ef4444; color: #f87171; }
-
-    .node-btn.active {
-      background-color: #2563eb;
+    .node-circle.active {
+      cursor: pointer;
+      border-color: var(--accent-blue);
+      background: #2563eb;
       color: white;
-      box-shadow: 0 5px 0 #1e40af;
+      box-shadow: 0 6px 0 #1d4ed8;
+      animation: bounce 1.8s infinite;
     }
 
-    .node-btn.hard.active {
-      background-color: #dc2626;
+    .node-circle.completed {
+      border-color: var(--accent-green);
+      background: var(--accent-green);
       color: white;
-      box-shadow: 0 5px 0 #991b1b;
+      box-shadow: 0 6px 0 #047857;
+      cursor: default;
     }
 
-    .node-btn.completed {
-      background-color: #10b981 !important;
-      color: white !important;
-      border-color: #059669 !important;
-      box-shadow: 0 5px 0 #047857 !important;
-    }
-
-    .node-label {
+    .node-title {
+      margin-top: 8px;
       font-size: 0.8rem;
       font-weight: 700;
-      margin-top: 6px;
+      color: var(--text-muted);
       text-align: center;
-      max-width: 120px;
-      color: #94a3b8;
+      max-width: 110px;
     }
 
-    .node-xp-badge {
-      position: absolute;
-      top: -6px;
-      right: -6px;
-      font-size: 0.6rem;
-      padding: 2px 6px;
-      border-radius: 50px;
-      font-weight: 800;
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
     }
 
-    .easy .node-xp-badge { background-color: #1d4ed8; color: #93c5fd; }
-    .hard .node-xp-badge { background-color: #991b1b; color: #fca5a5; }
-
-    .chest-node .node-btn {
-      width: 75px;
-      height: 75px;
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      border: 3px solid #fbbf24;
-      color: white;
-      font-size: 2rem;
-      box-shadow: 0 5px 0 #b45309;
-    }
-
-    /* Sessões das Outras Telas */
-    .screen-card {
-      background-color: #1e293b;
-      border-radius: 20px;
-      padding: 18px;
-      margin-bottom: 16px;
-      border: 1px solid #334155;
-    }
-
-    .screen-title {
-      font-size: 1.1rem;
-      color: #38bdf8;
-      font-weight: 800;
+    /* DASHBOARD (ESTILO NOTION) */
+    .notion-block {
+      background: var(--bg-hover);
+      border-radius: var(--radius);
+      padding: 16px;
       margin-bottom: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .block-header {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--accent-purple);
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
-    /* Estilo Diário de Bordo (Erros & Trajetória) */
-    .journal-textarea {
+    .notion-input, .notion-textarea {
       width: 100%;
-      height: 90px;
-      background-color: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 14px;
+      background: var(--bg-space);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
       padding: 10px;
-      color: #fff;
+      color: white;
       font-size: 0.85rem;
       outline: none;
-      resize: none;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
-    .journal-textarea:focus { border-color: #3b82f6; }
-
-    .journal-entry {
-      background-color: #0f172a;
-      border-left: 3px solid #ef4444;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      font-size: 0.85rem;
-    }
-
-    .journal-date {
-      font-size: 0.7rem;
-      color: #64748b;
-      margin-bottom: 4px;
-    }
-
-    .btn-action {
-      background-color: #2563eb;
+    .btn-notion {
+      width: 100%;
+      background: var(--accent-blue);
       color: white;
       border: none;
-      border-radius: 50px;
-      padding: 10px 16px;
-      font-weight: bold;
-      font-size: 0.85rem;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 700;
       cursor: pointer;
-      width: 100%;
+      font-size: 0.85rem;
     }
 
-    /* Pop-up de Recompensa */
-    .reward-modal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
-      padding: 28px 36px;
-      border-radius: 30px;
-      text-align: center;
-      box-shadow: 0 0 40px rgba(59, 130, 246, 0.8);
-      z-index: 300;
-      width: 85%;
-      max-width: 350px;
+    .log-item {
+      background: var(--bg-space);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      margin-top: 6px;
+      border-left: 3px solid var(--accent-purple);
     }
   </style>
 </head>
 <body>
 
-  <!-- Overlay do Menu -->
-  <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
-
-  <!-- Menu Lateral Funcional -->
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-title">⚡ LifeQuest Menu</div>
-    <div class="menu-item active-menu" onclick="switchView('view-home')">🗺️ Minha Trilha</div>
-    <div class="menu-item" onclick="switchView('view-journal')">📝 Erros & Trajetória</div>
-    <div class="menu-item" onclick="switchView('view-profile')">👤 Meu Perfil</div>
-    <div class="menu-item" onclick="switchView('view-achievements')">🏆 Conquistas</div>
-    <div class="menu-item" onclick="switchView('view-shop')">🛒 Loja de Recompensas</div>
-    <div class="menu-item" onclick="switchView('view-config')">⚙️ Configurações</div>
-  </div>
-
   <div class="app-container">
-    <!-- Topo -->
-    <div class="top-bar">
-      <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-      <div class="streak-badge">
-        🔥 <span id="streak-count">1</span> Dias
-      </div>
-      <div class="level-badge" id="level-display">Nível 1</div>
+    <!-- Status Bar estilo Duolingo -->
+    <div class="status-bar">
+      <div class="status-item streak">🔥 <span id="streak-val">0</span></div>
+      <div class="status-item xp">⭐ <span id="xp-val">0</span> XP</div>
+      <div class="status-item hearts">❤️ <span id="hearts-val">5</span></div>
     </div>
 
-    <!-- TELA 1: TRILHA PRINCIPAL (HOME) -->
-    <div id="view-home" class="view-section active-view">
-      <div class="daily-progress">
-        <div class="progress-title">Progresso Diário</div>
-        <div class="xp-bar-bg">
-          <div class="xp-bar-fill" id="daily-bar"></div>
-        </div>
+    <!-- Banner de Alerta (Aparece quando reseta) -->
+    <div id="alert-banner" class="alert-banner"></div>
+
+    <!-- Navegação estilo Notion -->
+    <div class="notion-nav">
+      <button class="nav-btn active" onclick="switchTab('tab-path', event)">🗺️ Trilha</button>
+      <button class="nav-btn" onclick="switchTab('tab-notion', event)">📋 Notion OS</button>
+      <button class="nav-btn" onclick="switchTab('tab-shop', event)">🛒 Loja</button>
+    </div>
+
+    <!-- TELA 1: TRILHA DUOLINGO -->
+    <div id="tab-path" class="tab-content active">
+      <div class="path-tree" id="path-container"></div>
+    </div>
+
+    <!-- TELA 2: NOTION OS -->
+    <div id="tab-notion" class="tab-content">
+      <div class="notion-block">
+        <div class="block-header">📝 Diário de Bordo & Aprendizados</div>
+        <textarea id="journal-input" class="notion-textarea" rows="3" placeholder="O que aprendeu hoje ou onde errou?"></textarea>
+        <button class="btn-notion" onclick="saveJournal()">Registrar no Notion (+10 XP)</button>
+        <div id="journal-logs"></div>
       </div>
 
-      <div class="path-container">
-        <div class="path-node">
-          <button class="node-btn easy active" onclick="completeStep(1, 15)">1<span class="node-xp-badge">+15 XP</span></button>
-          <span class="node-label" id="lbl-task-1">Beber Água</span>
-        </div>
-
-        <div class="path-node">
-          <button class="node-btn easy" id="btn-2" onclick="completeStep(2, 15)">2<span class="node-xp-badge">+15 XP</span></button>
-          <span class="node-label" id="lbl-task-2">Arrumar Cama</span>
-        </div>
-
-        <div class="path-node">
-          <button class="node-btn easy" id="btn-3" onclick="completeStep(3, 20)">3<span class="node-xp-badge">+20 XP</span></button>
-          <span class="node-label" id="lbl-task-3">Alongar 5 Min</span>
-        </div>
-
-        <div class="path-node">
-          <button class="node-btn hard" id="btn-4" onclick="completeStep(4, 50)">⚡<span class="node-xp-badge">+50 XP</span></button>
-          <span class="node-label" id="lbl-task-4">Estudar 30 Min</span>
-        </div>
-
-        <div class="path-node">
-          <button class="node-btn hard" id="btn-5" onclick="completeStep(5, 60)">🔥<span class="node-xp-badge">+60 XP</span></button>
-          <span class="node-label" id="lbl-task-5">Treinar 40 Min</span>
-        </div>
-
-        <div class="path-node chest-node">
-          <button class="node-btn" id="btn-chest" onclick="claimDailyReward()">🎁</button>
-          <span class="node-label" style="color: #fbbf24;">Baú Diário</span>
-        </div>
+      <div class="notion-block">
+        <div class="block-header">⚙️ Configuração da Trilha</div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">Edite as tarefas da sua jornada diária:</p>
+        <div id="task-inputs"></div>
+        <button class="btn-notion" style="margin-top: 8px; background: var(--accent-green);" onclick="saveTasks()">Salvar Trilha</button>
       </div>
     </div>
 
-    <!-- TELA 2: DIÁRIO DE ERROS & TRAJETÓRIA -->
-    <div id="view-journal" class="view-section">
-      <div class="screen-card">
-        <div class="screen-title">📝 Anotar Erro ou Aprendizado</div>
-        <textarea id="journal-input" class="journal-textarea" placeholder="O que me fez falhar hoje? O que aprendi com isso para não repetir amanhã?"></textarea>
-        <button class="btn-action" onclick="addJournalEntry()">Salvar Reflexão (+10 XP)</button>
+    <!-- TELA 3: LOJA DE RECOMPENSAS -->
+    <div id="tab-shop" class="tab-content">
+      <div class="notion-block">
+        <div class="block-header">🛒 Criar Recompensa Real</div>
+        <input type="text" id="shop-title" class="notion-input" placeholder="Ex: Assistir Netflix 30m">
+        <input type="number" id="shop-cost" class="notion-input" placeholder="Custo de XP (Ex: 100)">
+        <button class="btn-notion" onclick="addShopItem()">Adicionar Recompensa</button>
       </div>
-
-      <div class="screen-card">
-        <div class="screen-title">📜 Histórico da Trajetória</div>
-        <div id="journal-logs">
-          <div class="journal-entry">
-            <div class="journal-date">22/07/2026</div>
-            <div>Procrastinei no treino porque deixei para muito tarde. Amanhã vou treinar logo pela manhã.</div>
-          </div>
-        </div>
+      <div class="notion-block">
+        <div class="block-header">🎁 Recompensas Disponíveis</div>
+        <div id="shop-items"></div>
       </div>
     </div>
-
-    <!-- TELA 3: MEU PERFIL -->
-    <div id="view-profile" class="view-section">
-      <div class="screen-card" style="text-align: center;">
-        <div style="font-size: 3rem; margin-bottom: 8px;">🛡️</div>
-        <h2 style="margin:0; color:#fff;">Guerreiro(a) da Rotina</h2>
-        <p style="color:#94a3b8; font-size:0.85rem; margin-top:4px;">Classe: Foco Inabalável</p>
-      </div>
-      <div class="screen-card">
-        <div class="screen-title">📊 Estatísticas</div>
-        <p style="font-size:0.85rem; color:#cbd5e1;">🔥 Maior Sequência: <strong id="best-streak">1 dias</strong></p>
-        <p style="font-size:0.85rem; color:#cbd5e1;">⭐ Total de XP Acumulado: <strong id="total-xp">160 XP</strong></p>
-      </div>
-    </div>
-
-    <!-- TELA 4: CONQUISTAS -->
-    <div id="view-achievements" class="view-section">
-      <div class="screen-card">
-        <div class="screen-title">🏆 Conquistas Desbloqueadas</div>
-        <div style="display:flex; flex-direction:column; gap:10px;">
-          <div style="background:#0f172a; padding:10px; border-radius:10px; font-size:0.85rem;">
-            🥉 <strong>Primeiro Passo:</strong> Concluiu a primeira micro-tarefa.
-          </div>
-          <div style="background:#0f172a; padding:10px; border-radius:10px; font-size:0.85rem; opacity:0.5;">
-            🔒 <strong>Em Chamas:</strong> Alcance 7 dias de sequência.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TELA 5: LOJA DE RECOMPENSAS -->
-    <div id="view-shop" class="view-section">
-      <div class="screen-card">
-        <div class="screen-title">🛒 Loja da Vida Real</div>
-        <p style="font-size:0.8rem; color:#94a3b8;">Troque seu aprendizado por recompensas!</p>
-        <div style="background:#0f172a; padding:10px; border-radius:10px; font-size:0.85rem; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-          <span>☕ Tomar um café especial</span>
-          <button style="background:#2563eb; color:#fff; border:none; padding:4px 10px; border-radius:20px; font-size:0.75rem; cursor:pointer;">100 XP</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TELA 6: CONFIGURAÇÕES DE HÁBITOS -->
-    <div id="view-config" class="view-section">
-      <div class="screen-card">
-        <div class="screen-title">⚙️ Personalizar Hábitos Diários</div>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          <input type="text" class="task-input" style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:8px; color:#fff; font-size:0.85rem;" id="inp-1" value="Beber Água">
-          <input type="text" class="task-input" style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:8px; color:#fff; font-size:0.85rem;" id="inp-2" value="Arrumar Cama">
-          <input type="text" class="task-input" style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:8px; color:#fff; font-size:0.85rem;" id="inp-3" value="Alongar 5 Min">
-          <input type="text" class="task-input" style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:8px; color:#fff; font-size:0.85rem;" id="inp-4" value="Estudar 30 Min">
-          <input type="text" class="task-input" style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:8px; color:#fff; font-size:0.85rem;" id="inp-5" value="Treinar 40 Min">
-        </div>
-        <button class="btn-action" style="margin-top:12px;" onclick="saveCustomTasks()">Salvar Trilha</button>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Pop-up de Recompensa -->
-  <div class="reward-modal" id="reward-modal">
-    <h1 style="margin: 0; font-size: 2rem; color: #fff;">🎁 DIA CONCLUÍDO!</h1>
-    <p style="margin: 12px 0; color: #dbeafe;">+100 XP Bônus! Sua sequência subiu para o próximo dia.</p>
-    <button onclick="closeModalAndReset()" style="background-color: #fbbf24; border:none; padding: 10px 24px; border-radius: 50px; font-weight: bold; color: #78350f; cursor: pointer;">
-      Avançar para o Próximo Dia
-    </button>
   </div>
 
   <script>
-    let currentStep = 1;
-    let streak = 1;
-    let level = 1;
-    let completedSteps = 0;
+    let state = {
+      xp: 0,
+      streak: 0,
+      hearts: 5,
+      currentStep: 1,
+      lastActiveDate: null, // Guarda a data do último dia concluído
+      tasks: [
+        { id: 1, title: "Beber 1L d'Água", icon: "💧" },
+        { id: 2, title: "Arrumar Quarto", icon: "🧹" },
+        { id: 3, title: "Leitura 15 Min", icon: "📚" },
+        { id: 4, title: "Foco Total 40 Min", icon: "⚡" },
+        { id: 5, title: "Treino / Exercício", icon: "🔥" }
+      ],
+      journal: [],
+      shop: [
+        { id: 1, title: "Tomar um Café Especial", cost: 80 }
+      ]
+    };
 
-    // Trocar Telas pelo Menu Lateral
-    function switchView(viewId) {
-      document.querySelectorAll('.view-section').forEach(view => {
-        view.classList.remove('active-view');
-      });
-      document.querySelectorAll('.menu-item').forEach(item => {
-        item.classList.remove('active-menu');
-      });
-
-      document.getElementById(viewId).classList.add('active-view');
-      toggleSidebar();
+    function loadState() {
+      const saved = localStorage.getItem('@lifequest_os');
+      if (saved) {
+        state = JSON.parse(saved);
+      }
+      checkStreakReset();
+      renderUI();
     }
 
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('open');
-      document.getElementById('overlay').classList.toggle('active');
+    function saveState() {
+      localStorage.setItem('@lifequest_os', JSON.stringify(state));
     }
 
-    function playSound() {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
-        gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.15);
-      } catch (e) {}
-    }
+    // LÓGICA DE VERIFICAÇÃO DE DIAS (RESET DO FOGUINHO)
+    function checkStreakReset() {
+      if (!state.lastActiveDate) return;
 
-    function completeStep(stepNumber, xp) {
-      if (stepNumber !== currentStep) return;
+      const today = new Date().toDateString();
+      const lastDate = new Date(state.lastActiveDate).toDateString();
 
-      const btn = document.querySelectorAll('.node-btn')[stepNumber - 1];
-      btn.classList.remove('active');
-      btn.classList.add('completed');
-      btn.innerText = '✓';
+      if (today === lastDate) return; // Já concluiu hoje
 
-      playSound();
-      completedSteps++;
-      currentStep++;
+      const diffTime = Math.abs(new Date(today) - new Date(lastDate));
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      const percentage = (completedSteps / 5) * 100;
-      document.getElementById('daily-bar').style.width = `${percentage}%`;
-
-      if (currentStep <= 5) {
-        const nextBtn = document.getElementById(`btn-${currentStep}`);
-        nextBtn.classList.add('active');
+      // Se passou mais de 1 dia sem completar as tarefas
+      if (diffDays > 1) {
+        state.streak = 0; // Perde o foguinho!
+        state.hearts = Math.max(0, state.hearts - 1); // Perde 1 coração
+        
+        const banner = document.getElementById('alert-banner');
+        banner.style.display = 'block';
+        banner.innerText = `⚠️ Você ficou ${diffDays - 1} dia(s) sem acessar. Sua sequência foi resetada para 0!`;
+        
+        state.currentStep = 1; // Reseta o progresso do dia
+        saveState();
       }
     }
 
-    function claimDailyReward() {
-      if (completedSteps < 5) {
-        alert("Complete todas as 5 tarefas do dia primeiro!");
-        return;
-      }
+    function renderUI() {
+      document.getElementById('xp-val').innerText = state.xp;
+      document.getElementById('streak-val').innerText = state.streak;
+      document.getElementById('hearts-val').innerText = state.hearts;
 
-      playSound();
-      streak++;
-      level++;
+      const pathContainer = document.getElementById('path-container');
+      pathContainer.innerHTML = '';
 
-      document.getElementById('reward-modal').style.display = 'block';
-    }
+      state.tasks.forEach((task, index) => {
+        const stepNum = index + 1;
+        const isCompleted = stepNum < state.currentStep;
+        const isActive = stepNum === state.currentStep;
 
-    function closeModalAndReset() {
-      document.getElementById('reward-modal').style.display = 'none';
-
-      document.getElementById('streak-count').innerText = streak;
-      document.getElementById('best-streak').innerText = `${streak} dias`;
-      document.getElementById('level-display').innerText = `Nível ${level}`;
-      
-      completedSteps = 0;
-      currentStep = 1;
-      document.getElementById('daily-bar').style.width = '0%';
-
-      const buttons = document.querySelectorAll('.node-btn');
-      buttons.forEach((btn, index) => {
-        btn.classList.remove('completed', 'active');
-        if (index === 0) {
-          btn.classList.add('active');
-          btn.innerText = '1';
-        } else if (index < 3) {
-          btn.innerText = index + 1;
-        } else if (index === 3) {
-          btn.innerText = '⚡';
-        } else if (index === 4) {
-          btn.innerText = '🔥';
-        }
+        pathContainer.innerHTML += `
+          <div class="tree-node">
+            <button class="node-circle ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}" 
+                    onclick="completeNode(${stepNum})">
+              ${isCompleted ? '✓' : task.icon}
+            </button>
+            <span class="node-title">${task.title}</span>
+          </div>
+        `;
       });
-    }
 
-    // Salvar entrada no Diário de Erros
-    function addJournalEntry() {
-      const input = document.getElementById('journal-input');
-      const text = input.value.trim();
-
-      if (!text) return;
-
-      const now = new Date();
-      const dateStr = now.toLocaleDateString('pt-BR');
-
-      const logsContainer = document.getElementById('journal-logs');
-      const newEntry = `
-        <div class="journal-entry">
-          <div class="journal-date">${dateStr}</div>
-          <div>${text}</div>
+      const isChestActive = state.currentStep > 5;
+      pathContainer.innerHTML += `
+        <div class="tree-node">
+          <button class="node-circle ${isChestActive ? 'active' : ''}" 
+                  style="${isChestActive ? 'background: var(--accent-fire); border-color: var(--accent-fire);' : ''}" 
+                  onclick="claimChest()">
+            🎁
+          </button>
+          <span class="node-title" style="color: var(--accent-fire);">Baú Diário</span>
         </div>
       `;
 
-      logsContainer.insertAdjacentHTML('afterbegin', newEntry);
-      input.value = '';
-      playSound();
-      alert("Reflexão registrada no diário! (+10 XP)");
+      const taskInputs = document.getElementById('task-inputs');
+      taskInputs.innerHTML = '';
+      state.tasks.forEach((task, i) => {
+        taskInputs.innerHTML += `
+          <input type="text" class="notion-input" id="task-inp-${i}" value="${task.title}">
+        `;
+      });
+
+      renderJournal();
+      renderShop();
     }
 
-    function saveCustomTasks() {
-      for (let i = 1; i <= 5; i++) {
-        const val = document.getElementById(`inp-${i}`).value;
-        if (val.trim() !== "") {
-          document.getElementById(`lbl-task-${i}`).innerText = val;
-        }
-      }
-      alert("Trilha configurada com sucesso!");
+    function completeNode(step) {
+      if (step !== state.currentStep) return;
+
+      state.xp += 20;
+      state.currentStep++;
+      saveState();
+      renderUI();
     }
+
+    function claimChest() {
+      if (state.currentStep <= 5) {
+        alert("Complete todos os hábitos da trilha antes de abrir o baú!");
+        return;
+      }
+
+      state.streak++;
+      state.xp += 100;
+      state.lastActiveDate = new Date().toDateString(); // Registra o dia concluído!
+      state.currentStep = 1;
+      
+      document.getElementById('alert-banner').style.display = 'none';
+
+      saveState();
+      renderUI();
+      alert("🎉 Dia concluído! Sua sequência (🔥) está protegida até amanhã.");
+    }
+
+    function switchTab(tabId, event) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function saveJournal() {
+      const txt = document.getElementById('journal-input').value.trim();
+      if (!txt) return;
+
+      state.journal.unshift({ date: new Date().toLocaleDateString('pt-BR'), text: txt });
+      state.xp += 10;
+      document.getElementById('journal-input').value = '';
+      saveState();
+      renderUI();
+    }
+
+    function renderJournal() {
+      const logs = document.getElementById('journal-logs');
+      logs.innerHTML = '';
+      state.journal.forEach(item => {
+        logs.innerHTML += `
+          <div class="log-item">
+            <strong style="color: var(--text-muted); font-size: 0.7rem;">${item.date}</strong>
+            <div>${item.text}</div>
+          </div>
+        `;
+      });
+    }
+
+    function saveTasks() {
+      state.tasks.forEach((task, i) => {
+        const val = document.getElementById(`task-inp-${i}`).value;
+        if (val.trim()) task.title = val.trim();
+      });
+      saveState();
+      renderUI();
+      alert("Trilha atualizada!");
+    }
+
+    function addShopItem() {
+      const title = document.getElementById('shop-title').value.trim();
+      const cost = parseInt(document.getElementById('shop-cost').value);
+
+      if (!title || isNaN(cost)) return;
+
+      state.shop.push({ id: Date.now(), title, cost });
+      document.getElementById('shop-title').value = '';
+      document.getElementById('shop-cost').value = '';
+      saveState();
+      renderUI();
+    }
+
+    function buyShopItem(cost) {
+      if (state.xp < cost) {
+        alert("XP insuficiente!");
+        return;
+      }
+      state.xp -= cost;
+      saveState();
+      renderUI();
+      alert("Recompensa resgatada com sucesso!");
+    }
+
+    function renderShop() {
+      const container = document.getElementById('shop-items');
+      container.innerHTML = '';
+      state.shop.forEach(item => {
+        container.innerHTML += `
+          <div style="display:flex; justify-content:space-between; align-items:center; background: var(--bg-space); padding: 8px 12px; border-radius: 8px; margin-top: 6px;">
+            <span style="font-size: 0.85rem;">${item.title}</span>
+            <button class="btn-notion" style="width: auto; padding: 4px 12px; background: var(--accent-purple);" onclick="buyShopItem(${item.cost})">${item.cost} XP</button>
+          </div>
+        `;
+      });
+    }
+
+    loadState();
   </script>
 </body>
-</html>
+  </html>
+  
