@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LifeQuest - Trilha de Hábitos</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: #030712;
+      color: #f8fafc;
+      display: flex;
+      justify-content: center;
+      padding: 16px;
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 420px;
+      background-color: #0f172a;
+      border-radius: 28px;
+      padding: 20px;
+      border: 1px solid #1e293b;
+      box-shadow: 0 20px 30px -10px rgba(2, 6, 23, 0.8);
+      height: fit-content;
+      position: relative;
+    }
+
+    /* Topo: Menu Hambúrguer, Nível e Streak */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #1e293b;
+      padding: 8px 16px;
+      border-radius: 50px;
+      margin-bottom: 20px;
+      border: 1px solid #334155;
+    }
+
+    .menu-btn {
+      background: none;
+      border: none;
+      color: #f8fafc;
+      font-size: 1.4rem;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    .streak-badge {
+      color: #f97316;
+      font-weight: 800;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .level-badge {
+      background-color: #2563eb;
+      color: #fff;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+    }
+
+    /* Menu Lateral (Drawer) */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -280px;
+      width: 260px;
+      height: 100%;
+      background-color: #0f172a;
+      border-right: 1px solid #1e293b;
+      z-index: 200;
+      transition: left 0.3s ease;
+      padding: 24px 16px;
+      box-shadow: 10px 0 25px rgba(0,0,0,0.5);
+    }
+
+    .sidebar.open {
+      left: 0;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.6);
+      z-index: 150;
+    }
+
+    .sidebar-overlay.active {
+      display: block;
+    }
+
+    .sidebar-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #38bdf8;
+      margin-bottom: 20px;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      color: #94a3b8;
+      text-decoration: none;
+      font-weight: 600;
+      border-radius: 12px;
+      margin-bottom: 6px;
+      transition: background-color 0.2s, color 0.2s;
+      cursor: pointer;
+    }
+
+    .menu-item:hover, .menu-item.active-menu {
+      background-color: #1e293b;
+      color: #38bdf8;
+    }
+
+    /* Sistema de Telas do App */
+    .view-section {
+      display: none;
+    }
+
+    .view-section.active-view {
+      display: block;
+    }
+
+    /* Progresso Diário */
+    .daily-progress {
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      border-radius: 22px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .progress-title {
+      font-size: 0.85rem;
+      color: #93c5fd;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .xp-bar-bg {
+      background-color: rgba(3, 7, 18, 0.5);
+      height: 14px;
+      border-radius: 50px;
+      overflow: hidden;
+    }
+
+    .xp-bar-fill {
+      background: linear-gradient(90deg, #38bdf8, #60a5fa);
+      height: 100%;
+      width: 0%;
+      border-radius: 50px;
+      transition: width 0.4s ease;
+    }
+
+    /* Trilha Estilo Duolingo */
+    .path-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding: 10px 0 20px 0;
+    }
+
+    .path-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .path-node:nth-child(1) { transform: translateX(0px); }
+    .path-node:nth-child(2) { transform: translateX(-40px); }
+    .path-node:nth-child(3) { transform: translateX(40px); }
+    .path-node:nth-child(4) { transform: translateX(-30px); }
+    .path-node:nth-child(5) { transform: translateX(30px); }
+    .path-node:nth-child(6) { transform: translateX(0px); }
+
+    .node-btn {
+      width: 65px;
+      height: 65px;
+      border-radius: 50%;
+      border: none;
+      background-color: #1e293b;
+      color: #64748b;
+      font-size: 1.3rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #0f172a;
+      transition: transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .node-btn.easy { border: 3px solid #3b82f6; color: #60a5fa; }
+    .node-btn.hard { border: 3px solid #ef4444; color: #f87171; }
+
+    .node-btn.active {
+      background-color: #2563eb;
+      color: white;
+      box-shadow: 0 5px 0 #1e40af;
+    }
+
+    .node-btn.hard.active {
+      background-color: #dc2626;
+      color: white;
+      box-shadow: 0 5px 0 #991b1b;
+    }
+
+    .node-btn.completed {
+      background-color: #10b981 !important;
+      color: white !important;
+      border-color: #059669 !important;
+      box-shadow: 0 5px 0 #047857 !important;
+    }
+
+    .node-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-top: 6px;
+      text-align: center;
+      max-width: 120px;
+      color: #94a3b8;
+    }
+
+    .node-xp-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      font-size: 0.6rem;
+      padding: 2px 6px;
+      border-radius: 50px;
+      font-weight: 800;
+    }
+
+    .easy .node-xp-badge { background-color: #1d4ed8; color: #93c5fd; }
+    .hard .node-xp-badge { background-color: #991b1b; color: #fca5a5; }
+
+    .chest-node .node-btn {
+      width: 75px;
+      height: 75px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border: 3px solid #fbbf24;
+      color: white;
+      font-size: 2rem;
+      box-shadow: 0 5px 0 #b45309;
+    }
+
+    /* Sessões das Outras Telas */
+    .screen-card {
+      background-color: #1e293b;
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 16px;
+      border: 1px solid #334155;
+    }
+
+    .screen-title {
+      font-size: 1.1rem;
+      color: #38bdf8;
+      font-weight: 800;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Estilo Diário de Bordo (Erros & Trajetória) */
+    .journal-textarea {
+      width: 100%;
+      height: 90px;
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 10px;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+      resize: none;
+      margin-bottom: 10px;
+    }
+
+    .journal-textarea:focus { border-color: #3b82f6; }
+
+    .journal-entry {
+      background-color: #0f172a;
+      border-left: 3px solid #ef4444;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+    }
+
+    .journal-date {
+      font-size: 0.7rem;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+
+    .btn-action {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 16px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    /* Pop-up de Recompensa */
+    .reward-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      padding: 28px 36px;
+      border-radius: 30px;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(59, 130, 246, 0.8);
+      z-index: 300;
+      width: 85%;
+      max-width: 350px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Overlay do Menu -->
+  <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+  <!-- Menu Lateral Funcional -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-title">⚡ LifeQuest Menu</div>
+    <div class="menu-item active-menu" onclick="switchView('view-home')">🗺️ Minha Trilha</div>
+    <div class="menu-item" onclick="switchView('view-journal')">📝 Erros & Trajetória</div>
+    <div class="menu-item" onclick="switchView('view-profile')">👤 Meu Perfil</div>
+    <div class="menu-item" onclick="switchView('view-achievements')">🏆 Conquistas</div>
+    <div class="menu-item" onclick="switchView('view-shop')">🛒 Loja de Recompensas</div>
+    <div class="menu-item" onclick="switchView('view-config')">⚙️ Configurações</div>
+  </div>
+
+  <div class="app-container">
+    <!-- Topo -->
+    <div class="top-bar">
+      <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+      <div class="streak-badge">
+        🔥 <span id="streak-count">1</span> Dias
+      </div>
+      <div class="level-badge" id="level-display">Nível 1</div>
+    </div>
+
+    <!-- TELA 1: TRILHA PRINCIPAL (HOME) -->
+    <div id="view-home" class="view-section active-view">
+      <div class="daily-progress">
+        <div class="progress-title">Progresso Diário</div>
+        <div class="xp-bar-bg">
+          <div class="xp-bar-fill" id="daily-bar"></div>
+        </div>
+      </div>
+
+      <div class="path-container">
+        <div class="path-node">
+          <button class="node-btn easy active" onclick="completeStep(1, 15)">1<span class="node-xp-badge">+15 XP</span></button>
+          <span class="node-label" id="lbl-task-1">Beber Água</span>
+        </div>
+
+        <div class="path-node">
+          <button class="node-btn easy" id="btn-2" onclick="completeStep(2, 15)">2<span class="node-xp-badge">+15 XP</span></button>
+          <span class="node-label" id="lbl-task-2">Arrumar Cama</span>
+        </div>
+
+        <div class="path-node">
+          <button class="node-btn easy" id="btn-3" onclick="completeStep(3, 20)">3<span class="node-xp-badge">+20 XP</span></button>
+          <span class="node-label" id="lbl-task-3">Alongar 5 Min</span>
+        </div>
+
+        <div class="path-node">
+          <button class="node-btn hard" id="btn-4" onclick="completeStep(4, 50)">⚡<span class="node-xp-badge">+50 XP</span></button>
+          <span class="node-label" id="lbl-task-4">Estudar 30 Min</span>
+        </div>
+
+        <div class="path-node">
+          <button class="node-btn hard" id="btn-5" onclick="completeStep(5, 60)">🔥<span class="node-xp-badge">+60 XP</span></button>
+          <span class="node-label" id="lbl-task-5">Treinar 40 Min</span>
+        </div>
+
+        <div class="path-node chest-node">
+          <button class="node-btn" id="btn-chest" onclick="claimDailyReward()">🎁</button>
+          <span class="node-label" style="color: #fbbf24;">Baú Diário</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELA 2: DIÁRIO DE ERROS & TRAJETÓRIA -->
+    <div id="view-journal" class="view-section">
+      <div class="screen-card">
+        <div class="screen-title">📝 Anotar Erro ou Aprendizado</div>
+        <textarea id="journal-input" class="journal-textarea" placeholder="O que me fez falhar hoje? O que aprendi com isso para não repetir amanhã?"></textarea>
+        <button class="btn-action" onclick="addJournalEntry()">Salvar Reflexão (+10 XP)</button>
+      </div>
+
+      <div class="screen-card">
+        <div class="screen-title">📜 Histórico da Trajetória</div>
+        <div id="journal-logs">
+          <div class="journal-entry">
+            <div class="journal-date">22/07/2026</div>
+            <div>Procrastinei no treino porque deixei para muito tarde. Amanhã vou treinar logo pela manhã.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELA 3: MEU PERFIL -->
+    <div id="view-profile" class="view-section">
+      <div class="screen-card" style="text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 8px;">🛡️</div>
+        <h2 style="margin:0; color:#fff;">Guerreiro(a) da Rotina</h2>
+        <p style="color:#94a3b8; font-size:0.85rem; margin-top:4px;">Classe: Foco Inabalável</p>
+      </div>
+      <div class="screen-card">
+        <div class="screen-title">📊 Estatísticas</div>
+        <p style="font-size:0.85rem; color:#cbd5e1;">🔥 Maior Sequência: <strong id="best-streak">1 dias</strong></p>
+        <p style="font-size:0.85rem; color:#cbd5e1;">⭐ Total de XP Acumulado: <strong id="total-xp">160 XP</strong></p>
+      </div>
+    </div>
+
+    <!-- TELA 4: CONQUISTAS -->
+    <div id="view-achievements" class="view-section">
+      <div class="screen-card">
+        <div class="screen-title">🏆 Conquistas Desbloqueadas</div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="background:#0f172a; padding:10px; border-radius:10px; font-size:0.85rem;">
+            🥉 <strong>Primeiro Passo:</strong> Concluiu a primeira micro-tarefa.
+          </div>
+          <div style="background:#0f172a; padding:10px; border-radius:10px; font-size:0.85rem; opacity:0.5;">
+            🔒 <strong>Em Chamas:</strong> Alcance 7 dias de sequência.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELA 5: LOJA DE RECOMPENSAS -->
+    <div id="view-shop" class="view-section">
+      <div class="screen-card">
+        <div class="screen-title">🛒 Loja da Vida Real</div>
+        <p style="font-size:0.8rem; color:#94a3b8;">Troque seu aprendizado por recompensas!</p>
+        <div style="background:#0f172a; padding:10px; border-radius:10px; font-size:0.85rem; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span>☕ Tomar um café especial</span>
+          <button style="background:#2563eb; color:#fff; border:none; padding:4px 10px; border-radius:20px; font-size:0.75rem; cursor:pointer;">100 XP</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELA 6: CONFIGURAÇÕES DE HÁBITOS -->
+    <div id="view-config" class="view-section">
+      <div class="screen-card">
+        <div class="screen-title">⚙️ Personalizar Hábitos Diários</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <input type="text" class="task-input" style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:8px; color:#fff; font-size:0.85rem;" id="inp-1" value="Beber Água">
+          <input type="text" class="task-input" style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:8px; color:#fff; font-size:0.85rem;" id="inp-2" value="Arrumar Cama">
+          <input type="text" class="task-input" style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:8px; color:#fff; font-size:0.85rem;" id="inp-3" value="Alongar 5 Min">
+          <input type="text" class="task-input" style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:8px; color:#fff; font-size:0.85rem;" id="inp-4" value="Estudar 30 Min">
+          <input type="text" class="task-input" style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:8px; color:#fff; font-size:0.85rem;" id="inp-5" value="Treinar 40 Min">
+        </div>
+        <button class="btn-action" style="margin-top:12px;" onclick="saveCustomTasks()">Salvar Trilha</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pop-up de Recompensa -->
+  <div class="reward-modal" id="reward-modal">
+    <h1 style="margin: 0; font-size: 2rem; color: #fff;">🎁 DIA CONCLUÍDO!</h1>
+    <p style="margin: 12px 0; color: #dbeafe;">+100 XP Bônus! Sua sequência subiu para o próximo dia.</p>
+    <button onclick="closeModalAndReset()" style="background-color: #fbbf24; border:none; padding: 10px 24px; border-radius: 50px; font-weight: bold; color: #78350f; cursor: pointer;">
+      Avançar para o Próximo Dia
+    </button>
+  </div>
+
+  <script>
+    let currentStep = 1;
+    let streak = 1;
+    let level = 1;
+    let completedSteps = 0;
+
+    // Trocar Telas pelo Menu Lateral
+    function switchView(viewId) {
+      document.querySelectorAll('.view-section').forEach(view => {
+        view.classList.remove('active-view');
+      });
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('active-menu');
+      });
+
+      document.getElementById(viewId).classList.add('active-view');
+      toggleSidebar();
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('active');
+    }
+
+    function playSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.15);
+      } catch (e) {}
+    }
+
+    function completeStep(stepNumber, xp) {
+      if (stepNumber !== currentStep) return;
+
+      const btn = document.querySelectorAll('.node-btn')[stepNumber - 1];
+      btn.classList.remove('active');
+      btn.classList.add('completed');
+      btn.innerText = '✓';
+
+      playSound();
+      completedSteps++;
+      currentStep++;
+
+      const percentage = (completedSteps / 5) * 100;
+      document.getElementById('daily-bar').style.width = `${percentage}%`;
+
+      if (currentStep <= 5) {
+        const nextBtn = document.getElementById(`btn-${currentStep}`);
+        nextBtn.classList.add('active');
+      }
+    }
+
+    function claimDailyReward() {
+      if (completedSteps < 5) {
+        alert("Complete todas as 5 tarefas do dia primeiro!");
+        return;
+      }
+
+      playSound();
+      streak++;
+      level++;
+
+      document.getElementById('reward-modal').style.display = 'block';
+    }
+
+    function closeModalAndReset() {
+      document.getElementById('reward-modal').style.display = 'none';
+
+      document.getElementById('streak-count').innerText = streak;
+      document.getElementById('best-streak').innerText = `${streak} dias`;
+      document.getElementById('level-display').innerText = `Nível ${level}`;
+      
+      completedSteps = 0;
+      currentStep = 1;
+      document.getElementById('daily-bar').style.width = '0%';
+
+      const buttons = document.querySelectorAll('.node-btn');
+      buttons.forEach((btn, index) => {
+        btn.classList.remove('completed', 'active');
+        if (index === 0) {
+          btn.classList.add('active');
+          btn.innerText = '1';
+        } else if (index < 3) {
+          btn.innerText = index + 1;
+        } else if (index === 3) {
+          btn.innerText = '⚡';
+        } else if (index === 4) {
+          btn.innerText = '🔥';
+        }
+      });
+    }
+
+    // Salvar entrada no Diário de Erros
+    function addJournalEntry() {
+      const input = document.getElementById('journal-input');
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('pt-BR');
+
+      const logsContainer = document.getElementById('journal-logs');
+      const newEntry = `
+        <div class="journal-entry">
+          <div class="journal-date">${dateStr}</div>
+          <div>${text}</div>
+        </div>
+      `;
+
+      logsContainer.insertAdjacentHTML('afterbegin', newEntry);
+      input.value = '';
+      playSound();
+      alert("Reflexão registrada no diário! (+10 XP)");
+    }
+
+    function saveCustomTasks() {
+      for (let i = 1; i <= 5; i++) {
+        const val = document.getElementById(`inp-${i}`).value;
+        if (val.trim() !== "") {
+          document.getElementById(`lbl-task-${i}`).innerText = val;
+        }
+      }
+      alert("Trilha configurada com sucesso!");
+    }
+  </script>
+</body>
+</html>
