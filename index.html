@@ -3,159 +3,272 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>English Study Notes & Chat</title>
+  <title>English Notes & Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
+      --accent-hover: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
+      --user-msg-bg: #312e81;
+      --bot-msg-bg: #1e293b;
+      --input-bg: #0f172a;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: Arial, sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     body {
-      background-color: #f4f6f8;
+      background-color: var(--bg-color);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
+      min-height: 100vh;
       display: flex;
+      flex-direction: column;
+      align-items: center;
       justify-content: center;
-      padding: 20px;
-      color: #333;
+      padding: 24px;
+      color: var(--text-main);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(to right, #818cf8, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
     }
 
     .app-container {
       width: 100%;
-      max-width: 900px;
+      max-width: 1000px;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: 24px;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 820px) {
       .app-container {
         grid-template-columns: 1fr;
       }
     }
 
     .card {
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-      padding: 20px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      padding: 24px;
       display: flex;
       flex-direction: column;
-      height: 550px;
+      height: 580px;
     }
 
-    h2 {
-      font-size: 1.2rem;
-      margin-bottom: 15px;
-      color: #2c3e50;
-      border-bottom: 2px solid #eef2f5;
-      padding-bottom: 10px;
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--card-border);
     }
 
-    /* Bloco de Notas */
+    .card-header h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .icon-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(99, 102, 241, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
     textarea {
       width: 100%;
       flex-grow: 1;
-      border: 1px solid #dcdfe6;
-      border-radius: 8px;
-      padding: 12px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px;
       font-size: 0.95rem;
+      color: var(--text-main);
       resize: none;
       outline: none;
-      line-height: 1.5;
+      line-height: 1.6;
+      transition: all 0.2s ease;
     }
 
     textarea:focus {
-      border-color: #3498db;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
     }
 
-    /* Chat Area */
+    textarea::placeholder {
+      color: var(--text-muted);
+    }
+
     .chat-messages {
       flex-grow: 1;
       overflow-y: auto;
-      border: 1px solid #eef2f5;
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 12px;
-      background: #fafafa;
+      border-radius: 14px;
+      padding: 8px 4px;
+      margin-bottom: 16px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 6px;
+    }
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
     }
 
     .message {
-      max-width: 80%;
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      line-height: 1.4;
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .bot-message {
-      background: #e3f2fd;
-      color: #0d47a1;
+      background: var(--bot-msg-bg);
+      border: 1px solid var(--card-border);
+      color: #e2e8f0;
       align-self: flex-start;
-      border-bottom-left-radius: 2px;
+      border-top-left-radius: 4px;
+    }
+
+    .bot-message b {
+      color: #818cf8;
     }
 
     .user-message {
-      background: #2980b9;
+      background: var(--user-msg-bg);
+      border: 1px solid rgba(99, 102, 241, 0.3);
       color: #ffffff;
       align-self: flex-end;
-      border-bottom-right-radius: 2px;
+      border-top-right-radius: 4px;
     }
 
     .chat-input-area {
       display: flex;
-      gap: 8px;
+      gap: 10px;
     }
 
     .chat-input-area input {
       flex-grow: 1;
-      padding: 10px;
-      border: 1px solid #dcdfe6;
-      border-radius: 6px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 14px 16px;
+      border-radius: 12px;
       outline: none;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+
+    .chat-input-area input:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
     }
 
     .chat-input-area button {
-      background: #27ae60;
+      background: var(--accent-gradient);
       color: white;
       border: none;
-      padding: 10px 16px;
-      border-radius: 6px;
+      padding: 0 20px;
+      border-radius: 12px;
       cursor: pointer;
-      font-weight: bold;
-      transition: background 0.2s;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
 
     .chat-input-area button:hover {
-      background: #219150;
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .chat-input-area button:active {
+      transform: translateY(0);
     }
   </style>
 </head>
 <body>
 
+  <header>
+    <h1>English Learning Hub</h1>
+    <p>Seu espaço diário de anotações e prática de vocabulário</p>
+  </header>
+
   <div class="app-container">
     
-    <!-- Seção: Bloco de Notas -->
     <div class="card">
-      <h2>📝 Minhas Anotações</h2>
-      <textarea id="notes" placeholder="Escreva aqui suas frases, palavras aprendidas ou regras de gramática..."></textarea>
+      <div class="card-header">
+        <div class="icon-badge">📝</div>
+        <h2>Anotações de Estudo</h2>
+      </div>
+      <textarea id="notes" placeholder="Digite aqui suas palavras novas, regras gramaticais ou anotações livres... (salvamento automático)"></textarea>
     </div>
 
-    <!-- Seção: Chat de Prática -->
     <div class="card">
-      <h2>💬 Chat de Vocabulário</h2>
+      <div class="card-header">
+        <div class="icon-badge">💬</div>
+        <h2>Prática de Vocabulário</h2>
+      </div>
       <div class="chat-messages" id="chatBox">
         <div class="message bot-message">
-          Olá! Vamos praticar o inglês do dia a dia? Aqui vai a primeira palavra:<br><br>
+          Welcome! Vamos praticar o vocabulário do dia a dia?<br><br>
           👉 <b>Water</b> = Água<br>
           <i>Exemplo: "I drink water every day."</i>
         </div>
       </div>
       <div class="chat-input-area">
-        <input type="text" id="userInput" placeholder="Responda em inglês ou peça outra palavra...">
+        <input type="text" id="userInput" placeholder="Responda ou peça um novo termo...">
         <button onclick="sendMessage()">Enviar</button>
       </div>
     </div>
@@ -163,20 +276,20 @@
   </div>
 
   <script>
-    // Salva as anotações automaticamente no navegador
     const notesArea = document.getElementById('notes');
     notesArea.value = localStorage.getItem('user_english_notes') || '';
     notesArea.addEventListener('input', () => {
       localStorage.setItem('user_english_notes', notesArea.value);
     });
 
-    // Lista de palavras simples do dia a dia
     const vocabularyList = [
       { word: "Coffee", translation: "Café", sentence: "I need a cup of coffee." },
       { word: "Book", translation: "Livro", sentence: "She is reading a good book." },
       { word: "Work", translation: "Trabalho / Trabalhar", sentence: "I start work at 9 AM." },
       { word: "Friend", translation: "Amigo(a)", sentence: "He is my best friend." },
-      { word: "Food", translation: "Comida", sentence: "This food is delicious." }
+      { word: "Food", translation: "Comida", sentence: "This food is delicious." },
+      { word: "House", translation: "Casa", sentence: "Welcome to my house." },
+      { word: "Time", translation: "Tempo / Hora", sentence: "What time is it?" }
     ];
 
     let currentStep = 0;
@@ -188,30 +301,27 @@
 
       if (text === "") return;
 
-      // Adiciona mensagem do usuário
       const userMsgHtml = `<div class="message user-message">${text}</div>`;
       chatBox.innerHTML += userMsgHtml;
       input.value = "";
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      // Resposta do Robô
       setTimeout(() => {
         const item = vocabularyList[currentStep % vocabularyList.length];
         currentStep++;
 
         const botMsgHtml = `
           <div class="message bot-message">
-            Muito bem! Vamos para o próximo termo:<br><br>
+            Great! Aqui está o próximo termo do dia a dia:<br><br>
             👉 <b>${item.word}</b> = ${item.translation}<br>
             <i>Exemplo: "${item.sentence}"</i>
           </div>
         `;
         chatBox.innerHTML += botMsgHtml;
         chatBox.scrollTop = chatBox.scrollHeight;
-      }, 800);
+      }, 600);
     }
 
-    // Permite enviar mensagem pressionando Enter
     document.getElementById('userInput').addEventListener('keypress', function (e) {
       if (e.key === 'Enter') {
         sendMessage();
@@ -221,4 +331,3 @@
 
 </body>
 </html>
-
