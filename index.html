@@ -3,513 +3,222 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LifeQuest - Notion x Duolingo OS</title>
+  <title>English Study Notes & Chat</title>
   <style>
-    :root {
-      --bg-space: #0b0f19;
-      --bg-card: #151c2c;
-      --bg-hover: #1e293b;
-      --accent-blue: #38bdf8;
-      --accent-green: #10b981;
-      --accent-fire: #f97316;
-      --accent-purple: #a855f7;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border-color: #1e293b;
-      --radius: 16px;
-    }
-
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-family: Arial, sans-serif;
     }
 
     body {
-      background-color: var(--bg-space);
-      color: var(--text-main);
+      background-color: #f4f6f8;
       display: flex;
       justify-content: center;
-      min-height: 100vh;
-      padding: 16px;
+      padding: 20px;
+      color: #333;
     }
 
     .app-container {
       width: 100%;
-      max-width: 440px;
-      background-color: var(--bg-card);
-      border-radius: 28px;
+      max-width: 900px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .app-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       padding: 20px;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      position: relative;
+      height: 550px;
     }
 
-    /* Topo Estilo Duolingo (Status Bar) */
-    .status-bar {
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      color: #2c3e50;
+      border-bottom: 2px solid #eef2f5;
+      padding-bottom: 10px;
+    }
+
+    /* Bloco de Notas */
+    textarea {
+      width: 100%;
+      flex-grow: 1;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.95rem;
+      resize: none;
+      outline: none;
+      line-height: 1.5;
+    }
+
+    textarea:focus {
+      border-color: #3498db;
+    }
+
+    /* Chat Area */
+    .chat-messages {
+      flex-grow: 1;
+      overflow-y: auto;
+      border: 1px solid #eef2f5;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #fafafa;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--bg-hover);
-      padding: 10px 16px;
-      border-radius: 50px;
-      border: 1px solid var(--border-color);
+      flex-direction: column;
+      gap: 10px;
     }
 
-    .status-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: 800;
-      font-size: 0.9rem;
-    }
-
-    .streak { color: var(--accent-fire); }
-    .xp { color: var(--accent-blue); }
-    .hearts { color: #ef4444; }
-
-    /* Banner de Alerta de Perda de Sequência */
-    .alert-banner {
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid #ef4444;
-      color: #fca5a5;
-      padding: 10px;
+    .message {
+      max-width: 80%;
+      padding: 10px 14px;
       border-radius: 12px;
-      font-size: 0.8rem;
-      text-align: center;
-      display: none;
+      font-size: 0.9rem;
+      line-height: 1.4;
     }
 
-    /* Navegação Estilo Notion */
-    .notion-nav {
+    .bot-message {
+      background: #e3f2fd;
+      color: #0d47a1;
+      align-self: flex-start;
+      border-bottom-left-radius: 2px;
+    }
+
+    .user-message {
+      background: #2980b9;
+      color: #ffffff;
+      align-self: flex-end;
+      border-bottom-right-radius: 2px;
+    }
+
+    .chat-input-area {
       display: flex;
       gap: 8px;
-      background: rgba(15, 23, 42, 0.6);
-      padding: 4px;
-      border-radius: 12px;
     }
 
-    .nav-btn {
-      flex: 1;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      padding: 8px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .nav-btn.active {
-      background: var(--bg-hover);
-      color: var(--accent-blue);
-    }
-
-    /* Seções de Telas */
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    /* TRILHA (ESTILO DUOLINGO) */
-    .path-tree {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 24px;
-      padding: 20px 0;
-    }
-
-    .tree-node {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-    }
-
-    .tree-node:nth-child(1) { transform: translateX(0); }
-    .tree-node:nth-child(2) { transform: translateX(-35px); }
-    .tree-node:nth-child(3) { transform: translateX(35px); }
-    .tree-node:nth-child(4) { transform: translateX(-25px); }
-    .tree-node:nth-child(5) { transform: translateX(25px); }
-
-    .node-circle {
-      width: 68px;
-      height: 68px;
-      border-radius: 50%;
-      border: 4px solid var(--border-color);
-      background: var(--bg-hover);
-      color: var(--text-muted);
-      font-size: 1.5rem;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: not-allowed;
-      box-shadow: 0 6px 0 var(--border-color);
-      transition: all 0.2s ease;
-    }
-
-    .node-circle.active {
-      cursor: pointer;
-      border-color: var(--accent-blue);
-      background: #2563eb;
-      color: white;
-      box-shadow: 0 6px 0 #1d4ed8;
-      animation: bounce 1.8s infinite;
-    }
-
-    .node-circle.completed {
-      border-color: var(--accent-green);
-      background: var(--accent-green);
-      color: white;
-      box-shadow: 0 6px 0 #047857;
-      cursor: default;
-    }
-
-    .node-title {
-      margin-top: 8px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-align: center;
-      max-width: 110px;
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
-    }
-
-    /* DASHBOARD (ESTILO NOTION) */
-    .notion-block {
-      background: var(--bg-hover);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 12px;
-      border: 1px solid var(--border-color);
-    }
-
-    .block-header {
-      font-size: 0.9rem;
-      font-weight: 800;
-      color: var(--accent-purple);
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .notion-input, .notion-textarea {
-      width: 100%;
-      background: var(--bg-space);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
+    .chat-input-area input {
+      flex-grow: 1;
       padding: 10px;
-      color: white;
-      font-size: 0.85rem;
+      border: 1px solid #dcdfe6;
+      border-radius: 6px;
       outline: none;
-      margin-bottom: 8px;
     }
 
-    .btn-notion {
-      width: 100%;
-      background: var(--accent-blue);
+    .chat-input-area button {
+      background: #27ae60;
       color: white;
       border: none;
-      padding: 10px;
-      border-radius: 8px;
-      font-weight: 700;
+      padding: 10px 16px;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-weight: bold;
+      transition: background 0.2s;
     }
 
-    .log-item {
-      background: var(--bg-space);
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      margin-top: 6px;
-      border-left: 3px solid var(--accent-purple);
+    .chat-input-area button:hover {
+      background: #219150;
     }
   </style>
 </head>
 <body>
 
   <div class="app-container">
-    <!-- Status Bar estilo Duolingo -->
-    <div class="status-bar">
-      <div class="status-item streak">🔥 <span id="streak-val">0</span></div>
-      <div class="status-item xp">⭐ <span id="xp-val">0</span> XP</div>
-      <div class="status-item hearts">❤️ <span id="hearts-val">5</span></div>
+    
+    <!-- Seção: Bloco de Notas -->
+    <div class="card">
+      <h2>📝 Minhas Anotações</h2>
+      <textarea id="notes" placeholder="Escreva aqui suas frases, palavras aprendidas ou regras de gramática..."></textarea>
     </div>
 
-    <!-- Banner de Alerta (Aparece quando reseta) -->
-    <div id="alert-banner" class="alert-banner"></div>
-
-    <!-- Navegação estilo Notion -->
-    <div class="notion-nav">
-      <button class="nav-btn active" onclick="switchTab('tab-path', event)">🗺️ Trilha</button>
-      <button class="nav-btn" onclick="switchTab('tab-notion', event)">📋 Notion OS</button>
-      <button class="nav-btn" onclick="switchTab('tab-shop', event)">🛒 Loja</button>
-    </div>
-
-    <!-- TELA 1: TRILHA DUOLINGO -->
-    <div id="tab-path" class="tab-content active">
-      <div class="path-tree" id="path-container"></div>
-    </div>
-
-    <!-- TELA 2: NOTION OS -->
-    <div id="tab-notion" class="tab-content">
-      <div class="notion-block">
-        <div class="block-header">📝 Diário de Bordo & Aprendizados</div>
-        <textarea id="journal-input" class="notion-textarea" rows="3" placeholder="O que aprendeu hoje ou onde errou?"></textarea>
-        <button class="btn-notion" onclick="saveJournal()">Registrar no Notion (+10 XP)</button>
-        <div id="journal-logs"></div>
+    <!-- Seção: Chat de Prática -->
+    <div class="card">
+      <h2>💬 Chat de Vocabulário</h2>
+      <div class="chat-messages" id="chatBox">
+        <div class="message bot-message">
+          Olá! Vamos praticar o inglês do dia a dia? Aqui vai a primeira palavra:<br><br>
+          👉 <b>Water</b> = Água<br>
+          <i>Exemplo: "I drink water every day."</i>
+        </div>
       </div>
-
-      <div class="notion-block">
-        <div class="block-header">⚙️ Configuração da Trilha</div>
-        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">Edite as tarefas da sua jornada diária:</p>
-        <div id="task-inputs"></div>
-        <button class="btn-notion" style="margin-top: 8px; background: var(--accent-green);" onclick="saveTasks()">Salvar Trilha</button>
+      <div class="chat-input-area">
+        <input type="text" id="userInput" placeholder="Responda em inglês ou peça outra palavra...">
+        <button onclick="sendMessage()">Enviar</button>
       </div>
     </div>
 
-    <!-- TELA 3: LOJA DE RECOMPENSAS -->
-    <div id="tab-shop" class="tab-content">
-      <div class="notion-block">
-        <div class="block-header">🛒 Criar Recompensa Real</div>
-        <input type="text" id="shop-title" class="notion-input" placeholder="Ex: Assistir Netflix 30m">
-        <input type="number" id="shop-cost" class="notion-input" placeholder="Custo de XP (Ex: 100)">
-        <button class="btn-notion" onclick="addShopItem()">Adicionar Recompensa</button>
-      </div>
-      <div class="notion-block">
-        <div class="block-header">🎁 Recompensas Disponíveis</div>
-        <div id="shop-items"></div>
-      </div>
-    </div>
   </div>
 
   <script>
-    let state = {
-      xp: 0,
-      streak: 0,
-      hearts: 5,
-      currentStep: 1,
-      lastActiveDate: null, // Guarda a data do último dia concluído
-      tasks: [
-        { id: 1, title: "Beber 1L d'Água", icon: "💧" },
-        { id: 2, title: "Arrumar Quarto", icon: "🧹" },
-        { id: 3, title: "Leitura 15 Min", icon: "📚" },
-        { id: 4, title: "Foco Total 40 Min", icon: "⚡" },
-        { id: 5, title: "Treino / Exercício", icon: "🔥" }
-      ],
-      journal: [],
-      shop: [
-        { id: 1, title: "Tomar um Café Especial", cost: 80 }
-      ]
-    };
+    // Salva as anotações automaticamente no navegador
+    const notesArea = document.getElementById('notes');
+    notesArea.value = localStorage.getItem('user_english_notes') || '';
+    notesArea.addEventListener('input', () => {
+      localStorage.setItem('user_english_notes', notesArea.value);
+    });
 
-    function loadState() {
-      const saved = localStorage.getItem('@lifequest_os');
-      if (saved) {
-        state = JSON.parse(saved);
-      }
-      checkStreakReset();
-      renderUI();
-    }
+    // Lista de palavras simples do dia a dia
+    const vocabularyList = [
+      { word: "Coffee", translation: "Café", sentence: "I need a cup of coffee." },
+      { word: "Book", translation: "Livro", sentence: "She is reading a good book." },
+      { word: "Work", translation: "Trabalho / Trabalhar", sentence: "I start work at 9 AM." },
+      { word: "Friend", translation: "Amigo(a)", sentence: "He is my best friend." },
+      { word: "Food", translation: "Comida", sentence: "This food is delicious." }
+    ];
 
-    function saveState() {
-      localStorage.setItem('@lifequest_os', JSON.stringify(state));
-    }
+    let currentStep = 0;
 
-    // LÓGICA DE VERIFICAÇÃO DE DIAS (RESET DO FOGUINHO)
-    function checkStreakReset() {
-      if (!state.lastActiveDate) return;
+    function sendMessage() {
+      const input = document.getElementById('userInput');
+      const chatBox = document.getElementById('chatBox');
+      const text = input.value.trim();
 
-      const today = new Date().toDateString();
-      const lastDate = new Date(state.lastActiveDate).toDateString();
+      if (text === "") return;
 
-      if (today === lastDate) return; // Já concluiu hoje
+      // Adiciona mensagem do usuário
+      const userMsgHtml = `<div class="message user-message">${text}</div>`;
+      chatBox.innerHTML += userMsgHtml;
+      input.value = "";
+      chatBox.scrollTop = chatBox.scrollHeight;
 
-      const diffTime = Math.abs(new Date(today) - new Date(lastDate));
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      // Resposta do Robô
+      setTimeout(() => {
+        const item = vocabularyList[currentStep % vocabularyList.length];
+        currentStep++;
 
-      // Se passou mais de 1 dia sem completar as tarefas
-      if (diffDays > 1) {
-        state.streak = 0; // Perde o foguinho!
-        state.hearts = Math.max(0, state.hearts - 1); // Perde 1 coração
-        
-        const banner = document.getElementById('alert-banner');
-        banner.style.display = 'block';
-        banner.innerText = `⚠️ Você ficou ${diffDays - 1} dia(s) sem acessar. Sua sequência foi resetada para 0!`;
-        
-        state.currentStep = 1; // Reseta o progresso do dia
-        saveState();
-      }
-    }
-
-    function renderUI() {
-      document.getElementById('xp-val').innerText = state.xp;
-      document.getElementById('streak-val').innerText = state.streak;
-      document.getElementById('hearts-val').innerText = state.hearts;
-
-      const pathContainer = document.getElementById('path-container');
-      pathContainer.innerHTML = '';
-
-      state.tasks.forEach((task, index) => {
-        const stepNum = index + 1;
-        const isCompleted = stepNum < state.currentStep;
-        const isActive = stepNum === state.currentStep;
-
-        pathContainer.innerHTML += `
-          <div class="tree-node">
-            <button class="node-circle ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}" 
-                    onclick="completeNode(${stepNum})">
-              ${isCompleted ? '✓' : task.icon}
-            </button>
-            <span class="node-title">${task.title}</span>
+        const botMsgHtml = `
+          <div class="message bot-message">
+            Muito bem! Vamos para o próximo termo:<br><br>
+            👉 <b>${item.word}</b> = ${item.translation}<br>
+            <i>Exemplo: "${item.sentence}"</i>
           </div>
         `;
-      });
-
-      const isChestActive = state.currentStep > 5;
-      pathContainer.innerHTML += `
-        <div class="tree-node">
-          <button class="node-circle ${isChestActive ? 'active' : ''}" 
-                  style="${isChestActive ? 'background: var(--accent-fire); border-color: var(--accent-fire);' : ''}" 
-                  onclick="claimChest()">
-            🎁
-          </button>
-          <span class="node-title" style="color: var(--accent-fire);">Baú Diário</span>
-        </div>
-      `;
-
-      const taskInputs = document.getElementById('task-inputs');
-      taskInputs.innerHTML = '';
-      state.tasks.forEach((task, i) => {
-        taskInputs.innerHTML += `
-          <input type="text" class="notion-input" id="task-inp-${i}" value="${task.title}">
-        `;
-      });
-
-      renderJournal();
-      renderShop();
+        chatBox.innerHTML += botMsgHtml;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }, 800);
     }
 
-    function completeNode(step) {
-      if (step !== state.currentStep) return;
-
-      state.xp += 20;
-      state.currentStep++;
-      saveState();
-      renderUI();
-    }
-
-    function claimChest() {
-      if (state.currentStep <= 5) {
-        alert("Complete todos os hábitos da trilha antes de abrir o baú!");
-        return;
+    // Permite enviar mensagem pressionando Enter
+    document.getElementById('userInput').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        sendMessage();
       }
-
-      state.streak++;
-      state.xp += 100;
-      state.lastActiveDate = new Date().toDateString(); // Registra o dia concluído!
-      state.currentStep = 1;
-      
-      document.getElementById('alert-banner').style.display = 'none';
-
-      saveState();
-      renderUI();
-      alert("🎉 Dia concluído! Sua sequência (🔥) está protegida até amanhã.");
-    }
-
-    function switchTab(tabId, event) {
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-
-      document.getElementById(tabId).classList.add('active');
-      event.target.classList.add('active');
-    }
-
-    function saveJournal() {
-      const txt = document.getElementById('journal-input').value.trim();
-      if (!txt) return;
-
-      state.journal.unshift({ date: new Date().toLocaleDateString('pt-BR'), text: txt });
-      state.xp += 10;
-      document.getElementById('journal-input').value = '';
-      saveState();
-      renderUI();
-    }
-
-    function renderJournal() {
-      const logs = document.getElementById('journal-logs');
-      logs.innerHTML = '';
-      state.journal.forEach(item => {
-        logs.innerHTML += `
-          <div class="log-item">
-            <strong style="color: var(--text-muted); font-size: 0.7rem;">${item.date}</strong>
-            <div>${item.text}</div>
-          </div>
-        `;
-      });
-    }
-
-    function saveTasks() {
-      state.tasks.forEach((task, i) => {
-        const val = document.getElementById(`task-inp-${i}`).value;
-        if (val.trim()) task.title = val.trim();
-      });
-      saveState();
-      renderUI();
-      alert("Trilha atualizada!");
-    }
-
-    function addShopItem() {
-      const title = document.getElementById('shop-title').value.trim();
-      const cost = parseInt(document.getElementById('shop-cost').value);
-
-      if (!title || isNaN(cost)) return;
-
-      state.shop.push({ id: Date.now(), title, cost });
-      document.getElementById('shop-title').value = '';
-      document.getElementById('shop-cost').value = '';
-      saveState();
-      renderUI();
-    }
-
-    function buyShopItem(cost) {
-      if (state.xp < cost) {
-        alert("XP insuficiente!");
-        return;
-      }
-      state.xp -= cost;
-      saveState();
-      renderUI();
-      alert("Recompensa resgatada com sucesso!");
-    }
-
-    function renderShop() {
-      const container = document.getElementById('shop-items');
-      container.innerHTML = '';
-      state.shop.forEach(item => {
-        container.innerHTML += `
-          <div style="display:flex; justify-content:space-between; align-items:center; background: var(--bg-space); padding: 8px 12px; border-radius: 8px; margin-top: 6px;">
-            <span style="font-size: 0.85rem;">${item.title}</span>
-            <button class="btn-notion" style="width: auto; padding: 4px 12px; background: var(--accent-purple);" onclick="buyShopItem(${item.cost})">${item.cost} XP</button>
-          </div>
-        `;
-      });
-    }
-
-    loadState();
+    });
   </script>
+
 </body>
-  </html>
-  
+</html>
+
